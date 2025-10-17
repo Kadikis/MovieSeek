@@ -8,8 +8,13 @@ use Illuminate\Support\Collection;
 
 class MovieSearchService
 {
-    public function search(string $query, MovieApiService $movieApiService, string $sessionId): Search
+    public function search(string $query, MovieApiService $movieApiService, string $sessionId): ?Search
     {
+        $query = strtolower(trim($query));
+        if ($query === '') {
+            return null;
+        }
+
         //First check if the search already exists and is not expired or empty
         $search = app(SearchRepository::class)->getSearchByQueryAndSessionId($query, $sessionId);
 
