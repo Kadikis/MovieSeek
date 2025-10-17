@@ -8,11 +8,11 @@ use Illuminate\Support\Collection;
 
 class MovieSearchService
 {
-    public function search(string $query, MovieApiService $movieApiService, ?int $userId = null): Search
+    public function search(string $query, MovieApiService $movieApiService, string $sessionId): Search
     {
         $search = Search::create([
             'query' => $query,
-            'user_id' => $userId,
+            'session_id' => $sessionId,
         ]);
 
         /** @var Collection<OMDbResponseStructure> */
@@ -31,10 +31,10 @@ class MovieSearchService
         return $search->load('movies');
     }
 
-    public function getSearchById(int $id): ?Search
+    public function getSearchByIdAndSessionId(int $id, string $sessionId): ?Search
     {
-        $search = app(SearchRepository::class)->getSearchById($id);
-        if (!$search || $search->movies_count === 0 || $search->created_at->diffInDays(now()) > 3) {
+        $search = app(SearchRepository::class)->getSearchByIdAndSessionId($id, $sessionId);
+        if (!$search || $search->session_id !== $sessionId || $search->movies_count === 0 || $search->created_at->diffInDays(now()) > 3) {
             return null;
         }
 

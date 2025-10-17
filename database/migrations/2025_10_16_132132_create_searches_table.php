@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('searches', function (Blueprint $table) {
             $table->id();
-            $table->integer('user_id')->nullable();
+            $table->integer('session_id');
             $table->string('query');
             $table->timestamps();
 
-            $table->foreign('user_id')->references('id')->on('users');
+            $table->foreign('session_id')->references('id')->on('sessions');
             $table->index('query');
         });
     }

@@ -24,15 +24,15 @@ class HomeController extends Controller
         $searchResult = null;
         if ($searchId || $query) {
             if ($searchId) {
-                $searchResult = app(MovieSearchService::class)->getSearchById($searchId);
+                $searchResult = app(MovieSearchService::class)->getSearchByIdAndSessionId($searchId, session()->getId());
             }
             if (!$searchResult) {
-                $searchResult = app(MovieSearchService::class)->search($query, app(OMDbMovieApiService::class), $request->user()->id ?? null);
+                $searchResult = app(MovieSearchService::class)->search($query, app(OMDbMovieApiService::class), session()->getId());
             }
         }
 
         // List of latest searches to be displayed in index page
-        $latestSearches = app(SearchRepository::class)->getLatestSearches()->map(fn($search) => [
+        $latestSearches = app(SearchRepository::class)->getLatestSearches(sessionId: session()->getId())->map(fn($search) => [
             'id' => $search->id,
             'query' => $search->query,
             'movies_count' => $search->movies_count,

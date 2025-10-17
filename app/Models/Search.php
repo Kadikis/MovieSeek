@@ -16,6 +16,7 @@ class Search extends Model
 {
     protected $fillable = [
         'query',
+        'session_id',
     ];
 
     public function movies(): HasMany
