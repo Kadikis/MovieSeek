@@ -120,7 +120,7 @@ const handleSearch = async (s: Search) => {
                                 <div v-if="errors?.query" class="text-sm text-red-500">{{ errors.query }}</div>
                             </div>
                             <button
-                                type="button"
+                                type="submit"
                                 class="rounded-md border border-black bg-[#1b1b18] px-4 py-3 text-[14px] font-medium text-white hover:border-black hover:bg-black dark:border-[#eeeeec] dark:bg-[#eeeeec] dark:text-[#1C1C1A] dark:hover:border-white dark:hover:bg-white"
                             >
                                 Search
