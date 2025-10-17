@@ -11,6 +11,11 @@ use Inertia\Inertia;
 
 class HomeController extends Controller
 {
+    public function __construct(
+        private readonly MovieSearchService $movieSearchService,
+        private readonly SearchRepository $searchRepository,
+    ) {}
+
     public function index(Request $request): InertiaResponse
     {
         $request->validate([
@@ -24,15 +29,15 @@ class HomeController extends Controller
         $searchResult = null;
         if ($searchId || $query) {
             if ($searchId) {
-                $searchResult = app(MovieSearchService::class)->getSearchByIdAndSessionId($searchId, session()->getId());
+                $searchResult = $this->movieSearchService->getSearchByIdAndSessionId($searchId, session()->getId());
             }
             if (!$searchResult) {
-                $searchResult = app(MovieSearchService::class)->search($query, app(OMDbMovieApiService::class), session()->getId());
+                $searchResult = $this->movieSearchService->search($query, app(OMDbMovieApiService::class), session()->getId());
             }
         }
 
         // List of latest searches to be displayed in index page
-        $latestSearches = app(SearchRepository::class)->getLatestSearches(sessionId: session()->getId())->map(fn($search) => [
+        $latestSearches = $this->searchRepository->getLatestSearches(sessionId: session()->getId())->map(fn($search) => [
             'id' => $search->id,
             'query' => $search->query,
             'movies_count' => $search->movies_count,
