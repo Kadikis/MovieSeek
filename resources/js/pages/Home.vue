@@ -2,7 +2,7 @@
 import LatestSearches from '@/components/LatestSearches.vue';
 import MovieCard from '@/components/MovieCard.vue';
 import type { PropType } from 'vue';
-import { defineProps, onMounted, ref } from 'vue';
+import { defineProps, onMounted, onUnmounted, ref } from 'vue';
 
 interface Result {
     query: string;
@@ -50,15 +50,31 @@ const search = ref<Search>({
     movies_count: 0,
 });
 
+const handleKeyDown = (event: KeyboardEvent) => {
+    // Check for Cmd+K (Mac) or Ctrl+K (Windows/Linux)
+    if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
+        event.preventDefault();
+        searchInput.value?.focus();
+    }
+};
+
 onMounted(() => {
     search.value = props.currentSearch ?? {
         id: 0,
         query: '',
         movies_count: 0,
     };
+
+    document.addEventListener('keydown', handleKeyDown);
+});
+
+onUnmounted(() => {
+    document.removeEventListener('keydown', handleKeyDown);
 });
 
 const searchForm = ref<HTMLFormElement | null>(null);
+const searchInput = ref<HTMLInputElement | null>(null);
+
 const handleSearch = async (s: Search) => {
     await new Promise<void>((resolve) => {
         search.value = s;
@@ -92,6 +108,7 @@ const handleSearch = async (s: Search) => {
                             <input v-if="search.query" type="hidden" name="query" :value="search.query" />
                             <div class="relative flex-1">
                                 <input
+                                    ref="searchInput"
                                     v-model="search.query"
                                     type="text"
                                     placeholder="Search for a movie title"
