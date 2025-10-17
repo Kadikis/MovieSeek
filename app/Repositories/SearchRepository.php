@@ -22,4 +22,11 @@ class SearchRepository
         return Search::where('session_id', $sessionId)
             ->withCount('movies')->latest()->take($limit)->get();
     }
+
+    public function getSearchByQueryAndSessionId(string $query, string $sessionId): ?Search
+    {
+        return Search::where('query', $query)
+            ->where('session_id', $sessionId)
+            ->first();
+    }
 }

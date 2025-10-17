@@ -23,4 +23,14 @@ class Search extends Model
     {
         return $this->hasMany(Movie::class);
     }
+
+    public function isExpired(): bool
+    {
+        return $this->created_at->diffInDays(now()) > 3;
+    }
+
+    public function isEmpty(): bool
+    {
+        return $this->movies->count() === 0;
+    }
 }
