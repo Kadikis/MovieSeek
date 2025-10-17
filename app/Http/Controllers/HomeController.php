@@ -44,6 +44,7 @@ class HomeController extends Controller
         ]);
 
         return Inertia::render('Home', [
+            'query' => $query,
             'latestSearches' => $latestSearches,
             'searchResult' => $searchResult,
         ]);

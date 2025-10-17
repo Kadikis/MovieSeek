@@ -26,8 +26,9 @@ interface Search {
 
 const props = defineProps({
     errors: Object as PropType<{ query: string; search_id: string }>,
-    currentSearch: {
-        type: Object as PropType<Search>,
+    query: {
+        type: String,
+        default: '',
     },
     latestSearches: {
         type: Array as PropType<Search[]>,
@@ -59,11 +60,7 @@ const handleKeyDown = (event: KeyboardEvent) => {
 };
 
 onMounted(() => {
-    search.value = props.currentSearch ?? {
-        id: 0,
-        query: '',
-        movies_count: 0,
-    };
+    search.value.query = props.query;
 
     document.addEventListener('keydown', handleKeyDown);
 });
