@@ -6,6 +6,7 @@ use Inertia\Response as InertiaResponse;
 use App\Repositories\SearchRepository;
 use App\Services\OMDbMovieApiService;
 use App\Services\MovieSearchService;
+use App\Services\MovieService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -14,6 +15,7 @@ class HomeController extends Controller
     public function __construct(
         private readonly MovieSearchService $movieSearchService,
         private readonly SearchRepository $searchRepository,
+        private readonly MovieService $movieService,
     ) {}
 
     public function index(Request $request): InertiaResponse
@@ -47,6 +49,15 @@ class HomeController extends Controller
             'query' => $query,
             'latestSearches' => $latestSearches,
             'searchResult' => $searchResult,
+        ]);
+    }
+
+    public function show(string $movieImdbId): InertiaResponse
+    {
+        $movie = $this->movieService->getMovieByImdbId($movieImdbId, app(OMDbMovieApiService::class));
+
+        return Inertia::render('Show', [
+            'movie' => $movie,
         ]);
     }
 }

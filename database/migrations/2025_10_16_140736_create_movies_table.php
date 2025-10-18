@@ -16,9 +16,22 @@ return new class extends Migration
             $table->integer('search_id')->nullable();
             $table->string('title');
             $table->string('year')->nullable();
+            $table->string('rated')->nullable();
+            $table->string('released')->nullable();
+            $table->string('runtime')->nullable();
+            $table->string('genre')->nullable();
+            $table->string('director')->nullable();
+            $table->string('writer')->nullable();
+            $table->text('actors')->nullable();
+            $table->text('plot')->nullable();
+            $table->string('language')->nullable();
+            $table->string('country')->nullable();
+            $table->string('poster')->nullable();
+            $table->string('imdb_rating')->nullable();
+            $table->string('imdb_votes')->nullable();
             $table->string('imdb_id');
             $table->string('type');
-            $table->string('poster')->nullable();
+            $table->boolean('full_data')->default(false);
             $table->timestamps();
 
             $table->foreign('search_id')->references('id')->on('searches')->onDelete('cascade');

@@ -6,6 +6,7 @@ use Exception;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use App\Structures\OMDbResponseStructure;
+use App\Structures\MovieApiSingleMovieResponseStructure;
 
 class OMDbMovieApiService extends MovieApiService
 {
@@ -67,5 +68,19 @@ class OMDbMovieApiService extends MovieApiService
         }
 
         return $results;
+    }
+
+    public function getMovieByImdbId(string $imdbId): ?MovieApiSingleMovieResponseStructure
+    {
+        $response = Http::timeout(10)->get($this->baseUrl, [
+            'apikey' => $this->apiKey,
+            'i' => $imdbId,
+        ]);
+
+        if (!$response->ok()) {
+            return null;
+        }
+
+        return MovieApiSingleMovieResponseStructure::fromArray($response->json());
     }
 }
