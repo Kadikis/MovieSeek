@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('movies', function (Blueprint $table) {
             $table->id();
-            $table->integer('search_id')->nullable();
             $table->string('title');
             $table->string('year')->nullable();
             $table->string('rated')->nullable();
@@ -29,14 +28,12 @@ return new class extends Migration
             $table->string('poster')->nullable();
             $table->string('imdb_rating')->nullable();
             $table->string('imdb_votes')->nullable();
-            $table->string('imdb_id');
+            $table->string('imdb_id')->unique();
             $table->string('type');
             $table->boolean('full_data')->default(false);
             $table->timestamps();
 
-            $table->foreign('search_id')->references('id')->on('searches')->onDelete('cascade');
             $table->index('imdb_id');
-            $table->index('search_id');
         });
     }
 

@@ -3,11 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * @property int $id
- * @property int $user_id
+ * @property int $session_id
  * @property string $query
  * @property Carbon $created_at
  * @property Carbon $updated_at
@@ -19,9 +19,9 @@ class Search extends Model
         'session_id',
     ];
 
-    public function movies(): HasMany
+    public function movies(): BelongsToMany
     {
-        return $this->hasMany(Movie::class);
+        return $this->belongsToMany(Movie::class, 'search_movies')->withTimestamps();
     }
 
     public function isExpired(): bool

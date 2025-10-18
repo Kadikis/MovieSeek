@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Movie;
 use App\Models\Search;
 use App\Repositories\SearchRepository;
 use Illuminate\Support\Collection;
@@ -29,6 +30,13 @@ class MovieSearchService
             $movies = $movieApiService->search($query);
 
             foreach ($movies as $movie) {
+                //TODO: User Repository to get the movie from the database
+                $existingMovie = Movie::where('imdb_id', $movie->imdb_id)->first();
+                if ($existingMovie) {
+                    $search->movies()->attach($existingMovie->id);
+                    continue;
+                }
+
                 $search->movies()->create([
                     'title' => $movie->title,
                     'year' => $movie->year,

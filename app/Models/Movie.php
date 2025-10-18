@@ -3,11 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
- * @property int $search_id
  * @property string $title
  * @property string|null $year
  * @property string|null $poster
@@ -53,11 +51,6 @@ class Movie extends Model
         'type',
         'full_data',
     ];
-
-    public function search(): BelongsTo
-    {
-        return $this->belongsTo(Search::class);
-    }
 
     public function isExpired(): bool
     {
