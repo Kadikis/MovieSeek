@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -59,6 +61,6 @@ class Movie extends Model
 
     public function hasFullData(): bool
     {
-        return $this->full_data;
+        return (bool) $this->full_data;
     }
 }

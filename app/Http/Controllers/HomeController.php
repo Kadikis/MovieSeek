@@ -1,11 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use Inertia\Response as InertiaResponse;
 use App\Repositories\SearchRepository;
 use App\Services\OMDbMovieApiService;
-use App\Services\MovieSearchService;
 use App\Services\MovieService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -13,7 +14,6 @@ use Inertia\Inertia;
 class HomeController extends Controller
 {
     public function __construct(
-        private readonly MovieSearchService $movieSearchService,
         private readonly SearchRepository $searchRepository,
         private readonly MovieService $movieService,
     ) {}
@@ -22,24 +22,24 @@ class HomeController extends Controller
     {
         $request->validate([
             'search_id' => 'nullable|integer|exists:searches,id',
-            'query' => 'nullable|string|max:255|min:3',
+            'query' => 'nullable|string|max:255|min:4',
         ]);
 
-        $searchId = $request->input('search_id');
-        $query = $request->input('query');
+        $searchId = (int) $request->input('search_id');
+        $query = (string) $request->input('query');
 
         $searchResult = null;
         if ($searchId || $query) {
             if ($searchId) {
-                $searchResult = $this->movieSearchService->getSearchByIdAndSessionId($searchId, session()->getId());
+                $searchResult = $this->searchRepository->getByIdAndSessionId($searchId, session()->getId());
             }
             if (!$searchResult) {
-                $searchResult = $this->movieSearchService->search($query, app(OMDbMovieApiService::class), session()->getId());
+                $searchResult = $this->movieService->search($query, app(OMDbMovieApiService::class), session()->getId());
             }
         }
 
         // List of latest searches to be displayed in index page
-        $latestSearches = $this->searchRepository->getLatestSearches(sessionId: session()->getId())->map(fn($search) => [
+        $latestSearches = $this->searchRepository->getLatestBySessionId(sessionId: session()->getId())->map(fn($search) => [
             'id' => $search->id,
             'query' => $search->query,
             'movies_count' => $search->movies_count,

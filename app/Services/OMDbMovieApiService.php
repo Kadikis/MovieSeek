@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use Exception;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
-use App\Structures\OMDbResponseStructure;
+use App\Structures\MovieApiSearchResponseStructure;
 use App\Structures\MovieApiSingleMovieResponseStructure;
 
 class OMDbMovieApiService extends MovieApiService
@@ -25,7 +27,7 @@ class OMDbMovieApiService extends MovieApiService
     /**
      * Search for movies using the OMDb API.
      *
-     * @return Collection<OMDbResponseStructure>
+     * @return Collection<MovieApiSearchResponseStructure>
      */
     public function search(string $query): Collection
     {
@@ -33,7 +35,7 @@ class OMDbMovieApiService extends MovieApiService
         if ($trimmedQuery === '') {
             return collect();
         }
-        /** @var Collection<OMDbResponseStructure> $results */
+        /** @var Collection<MovieApiSearchResponseStructure> $results */
         $results = collect();
 
         $page = 1;
@@ -60,7 +62,7 @@ class OMDbMovieApiService extends MovieApiService
             }
 
             collect($data['Search'] ?? [])->each(function (array $item) use ($results) {
-                $item = OMDbResponseStructure::fromArray($item);
+                $item = MovieApiSearchResponseStructure::fromArray($item);
                 $results->push($item);
             });
 
