@@ -23,6 +23,9 @@ interface Movie {
 }
 
 defineProps({
+    searchId: {
+        type: Number,
+    },
     movie: {
         type: Object as PropType<Movie>,
         required: true,
@@ -56,7 +59,7 @@ const showFallback = ref(false);
         <section class="px-6 py-8 lg:px-10 lg:py-12">
             <div class="mx-auto max-w-6xl">
                 <div class="mb-6">
-                    <a href="/" class="text-2xl font-semibold tracking-tight">← MovieSeek</a>
+                    <a :href="`/${searchId ? `?search_id=${searchId}` : ''}`" class="text-2xl font-semibold tracking-tight">← MovieSeek</a>
                 </div>
             </div>
         </section>

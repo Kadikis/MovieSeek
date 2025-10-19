@@ -10,6 +10,10 @@ interface Movie {
     poster: string;
 }
 defineProps({
+    searchId: {
+        type: Number,
+        required: true,
+    },
     movie: {
         type: Object as PropType<Movie>,
         required: true,
@@ -27,7 +31,7 @@ const showFallback = ref(false);
 </script>
 
 <template>
-    <a :href="`/movie/${movie.imdb_id}`" class="block">
+    <a :href="`/movie/${movie.imdb_id}?search_id=${searchId}`" class="block">
         <div
             class="group overflow-hidden rounded-lg border border-[#e3e3e0] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] dark:border-[#3E3E3A] dark:bg-[#161615]"
         >

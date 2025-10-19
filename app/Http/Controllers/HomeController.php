@@ -52,12 +52,15 @@ class HomeController extends Controller
         ]);
     }
 
-    public function show(string $movieImdbId): InertiaResponse
+    public function show(string $movieImdbId, Request $request): InertiaResponse
     {
+        $searchId = (int) $request->input('search_id') ?? null;
+
         $movie = $this->movieService->getMovieByImdbId($movieImdbId, app(OMDbMovieApiService::class));
 
         return Inertia::render('Show', [
             'movie' => $movie,
+            'searchId' => $searchId,
         ]);
     }
 }

@@ -5,6 +5,7 @@ import type { PropType } from 'vue';
 import { defineProps, onMounted, onUnmounted, ref } from 'vue';
 
 interface Result {
+    id: number;
     query: string;
     movies: Movie[];
 }
@@ -134,7 +135,7 @@ const handleSearch = async (s: Search) => {
                 <div v-if="searchResult?.movies?.length > 0">
                     <h2 class="mb-3 text-sm font-medium text-[#706f6c] dark:text-[#A1A09A]">Movies Found</h2>
                     <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-                        <MovieCard v-for="movie in searchResult?.movies" :key="movie.id" :movie="movie" />
+                        <MovieCard v-for="movie in searchResult?.movies" :key="movie.id" :movie="movie" :search-id="searchResult.id" />
                     </div>
                 </div>
             </div>
