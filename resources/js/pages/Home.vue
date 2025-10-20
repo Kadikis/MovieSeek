@@ -98,9 +98,6 @@ const handleSearch = async (s: Search) => {
                             Looking for a movie? We've got you covered.
                         </p>
 
-                        <!-- <div>Current Search: {{ search }}</div> -->
-                        <!-- <div>!{{ searchResult }}</div> -->
-
                         <form class="flex w-full max-w-2xl items-center gap-2" action="/" ref="searchForm">
                             <input v-if="search.id" type="hidden" name="search_id" :value="search.id" />
                             <input v-if="search.query" type="hidden" name="query" :value="search.query" />
