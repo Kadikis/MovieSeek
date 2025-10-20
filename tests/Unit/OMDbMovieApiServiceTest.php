@@ -27,6 +27,8 @@ class OMDbMovieApiServiceTest extends TestCase
     {
         parent::setUp();
 
+        config(['services.omdb.key' => 'test-key']);
+
         $this->mockHttpFactory = Mockery::mock(HttpFactory::class);
         $this->mockPendingRequest = Mockery::mock(PendingRequest::class);
         $this->omdbService = new OMDbMovieApiService($this->mockHttpFactory);
