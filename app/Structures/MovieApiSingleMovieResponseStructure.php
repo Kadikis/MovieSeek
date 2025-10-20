@@ -65,9 +65,9 @@ class MovieApiSingleMovieResponseStructure
             'language' => $this->language,
             'country' => $this->country,
             'poster' => $this->poster,
-            'imdbRating' => $this->imdbRating,
-            'imdbVotes' => $this->imdbVotes,
-            'imdbID' => $this->imdbID,
+            'imdb_rating' => $this->imdbRating,
+            'imdb_votes' => $this->imdbVotes,
+            'imdb_id' => $this->imdbID,
             'type' => $this->type,
         ];
     }

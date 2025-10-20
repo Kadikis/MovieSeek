@@ -16,9 +16,9 @@ interface Movie {
     language: string;
     country: string;
     poster: string;
-    imdbRating: string;
-    imdbVotes: string;
-    imdbID: string;
+    imdb_rating: string;
+    imdb_votes: string;
+    imdb_id: string;
     type: string;
 }
 
@@ -43,9 +43,9 @@ defineProps({
             language: '',
             country: '',
             poster: '',
-            imdbRating: '',
-            imdbVotes: '',
-            imdbID: '',
+            imdb_rating: '',
+            imdb_votes: '',
+            imdb_id: '',
             type: '',
         }),
     },
@@ -100,14 +100,14 @@ const showFallback = ref(false);
                                     </div>
                                 </div>
 
-                                <div v-if="movie.imdbRating && movie.imdbRating !== 'N/A'" class="flex items-center gap-2">
+                                <div v-if="movie.imdb_rating && movie.imdb_rating !== 'N/A'" class="flex items-center gap-2">
                                     <div class="flex items-center gap-1">
                                         <span class="text-yellow-500">⭐</span>
-                                        <span class="font-semibold">{{ movie.imdbRating }}</span>
+                                        <span class="font-semibold">{{ movie.imdb_rating }}</span>
                                         <span class="text-sm text-[#706f6c] dark:text-[#A1A09A]">/10</span>
                                     </div>
-                                    <span v-if="movie.imdbVotes && movie.imdbVotes !== 'N/A'" class="text-sm text-[#706f6c] dark:text-[#A1A09A]">
-                                        ({{ movie.imdbVotes }} votes)
+                                    <span v-if="movie.imdb_votes && movie.imdb_votes !== 'N/A'" class="text-sm text-[#706f6c] dark:text-[#A1A09A]">
+                                        ({{ movie.imdb_votes }} votes)
                                     </span>
                                 </div>
 
@@ -152,9 +152,18 @@ const showFallback = ref(false);
                                         <p class="text-sm">{{ movie.released }}</p>
                                     </div>
 
-                                    <div v-if="movie.imdbID && movie.imdbID !== 'N/A'">
-                                        <h3 class="mb-1 text-sm font-semibold text-[#706f6c] dark:text-[#A1A09A]">IMDb ID</h3>
-                                        <p class="text-sm">{{ movie.imdbID }}</p>
+                                    <div v-if="movie.imdb_id && movie.imdb_id !== 'N/A'">
+                                        <h3 class="mb-1 text-sm font-semibold text-[#706f6c] dark:text-[#A1A09A]">IMDb</h3>
+                                        <p class="text-sm">
+                                            <a
+                                                :href="`https://www.imdb.com/title/${movie.imdb_id}/`"
+                                                target="_blank"
+                                                rel="noopener"
+                                                class="underline hover:opacity-80"
+                                            >
+                                                View on IMDb
+                                            </a>
+                                        </p>
                                     </div>
                                 </div>
                             </div>
