@@ -6,7 +6,7 @@ namespace App\Services;
 
 use Exception;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Client\Factory;
 use App\Structures\MovieApiSearchResponseStructure;
 use App\Structures\MovieApiSingleMovieResponseStructure;
 
@@ -15,7 +15,7 @@ class OMDbMovieApiService extends MovieApiService
     protected string $baseUrl = 'https://www.omdbapi.com/';
     protected ?string $apiKey = null;
 
-    public function __construct()
+    public function __construct(private readonly Factory $http)
     {
         $this->apiKey = config('services.omdb.key');
 
@@ -43,7 +43,7 @@ class OMDbMovieApiService extends MovieApiService
         $totalPages = 1;
         $noResults = false;
         while ($page <= $totalPages && !$noResults) {
-            $response = Http::timeout(10)->get($this->baseUrl, [
+            $response = $this->http->timeout(10)->get($this->baseUrl, [
                 'apikey' => $this->apiKey,
                 's' => $trimmedQuery,
                 'page' => $page,
@@ -74,7 +74,7 @@ class OMDbMovieApiService extends MovieApiService
 
     public function getMovieByImdbId(string $imdbId): ?MovieApiSingleMovieResponseStructure
     {
-        $response = Http::timeout(10)->get($this->baseUrl, [
+        $response = $this->http->timeout(10)->get($this->baseUrl, [
             'apikey' => $this->apiKey,
             'i' => $imdbId,
         ]);
