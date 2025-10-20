@@ -11,6 +11,11 @@ use App\Structures\MovieApiSearchResponseStructure;
 
 class MovieService
 {
+
+    public function __construct(
+        private readonly SearchRepository $searchRepository,
+    ) {}
+
     public function search(string $query, MovieApiService $movieApiService, string $sessionId): ?Search
     {
         //Normally we would run this in background job, but for now we will just set the time limit
@@ -22,7 +27,7 @@ class MovieService
         }
 
         //First check if the search already exists and is not expired or empty
-        $search = app(SearchRepository::class)->getByQueryAndSessionId($query, $sessionId);
+        $search = $this->searchRepository->getByQueryAndSessionId($query, $sessionId);
 
         //If the search does not exist, create a new one and then fetch the movies from the API
         if (!$search || $search->isEmpty() || $search->isExpired()) {
@@ -63,10 +68,8 @@ class MovieService
             return null;
         }
 
-        //TODO: Fetch just one and update it
-        $movies = Movie::where('imdb_id', $imdbId)->get();
-        $movies->each->update(['full_data' => true, ...$movieData->toArray()]);
+        $movie = Movie::updateOrCreate(['imdb_id' => $imdbId], [...$movieData->toArray(), 'full_data' => true]);
 
-        return $movies->first();
+        return $movie;
     }
 }
