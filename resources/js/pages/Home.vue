@@ -2,12 +2,16 @@
 import LatestSearches from '@/components/LatestSearches.vue';
 import MovieCard from '@/components/MovieCard.vue';
 import type { PropType } from 'vue';
-import { defineProps, onMounted, onUnmounted, ref } from 'vue';
+import { computed, defineProps, onMounted, onUnmounted, ref } from 'vue';
 
 interface Result {
     id: number;
     query: string;
     movies: Movie[];
+    total_results: number;
+    total_pages: number;
+    no_results: boolean;
+    pages_loaded: number;
 }
 
 interface Movie {
@@ -43,6 +47,10 @@ const props = defineProps({
             id: 0,
             query: '',
             movies: [],
+            total_results: 0,
+            total_pages: 0,
+            no_results: false,
+            pages_loaded: 0,
         }),
     },
 });
@@ -72,6 +80,11 @@ onUnmounted(() => {
 
 const searchForm = ref<HTMLFormElement | null>(null);
 const searchInput = ref<HTMLInputElement | null>(null);
+const isLoadingMore = ref(false);
+
+const canLoadMore = computed(() => {
+    return props.searchResult?.total_pages > props.searchResult?.pages_loaded;
+});
 
 const handleSearch = async (s: Search) => {
     await new Promise<void>((resolve) => {
@@ -80,6 +93,33 @@ const handleSearch = async (s: Search) => {
     }).then(() => {
         searchForm.value?.submit();
     });
+};
+
+const handleLoadMore = async () => {
+    if (!props.searchResult?.id || isLoadingMore.value || !canLoadMore.value) return;
+
+    isLoadingMore.value = true;
+
+    try {
+        const params = new URLSearchParams();
+        params.append('search_id', props.searchResult.id.toString());
+        params.append('load_more', '1');
+
+        const response = await fetch(`/?${params.toString()}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        });
+
+        if (response.ok) {
+            window.location.reload();
+        }
+    } catch (error) {
+        console.error('Error loading more movies:', error);
+    } finally {
+        isLoadingMore.value = false;
+    }
 };
 </script>
 
@@ -133,6 +173,17 @@ const handleSearch = async (s: Search) => {
                     <h2 class="mb-3 text-sm font-medium text-[#706f6c] dark:text-[#A1A09A]">Movies Found</h2>
                     <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
                         <MovieCard v-for="movie in searchResult?.movies" :key="movie.id" :movie="movie" :search-id="searchResult.id" />
+                    </div>
+
+                    <div v-if="canLoadMore" class="mt-8 flex justify-center">
+                        <button
+                            @click="handleLoadMore"
+                            :disabled="isLoadingMore"
+                            class="rounded-md border border-[#e3e3e0] bg-white px-6 py-3 text-sm font-medium text-[#1b1b18] hover:bg-[#f8f8f7] disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#3E3E3A] dark:bg-[#161615] dark:text-[#EDEDEC] dark:hover:bg-[#1a1a18]"
+                        >
+                            <span v-if="isLoadingMore">Loading...</span>
+                            <span v-else>Load More Movies</span>
+                        </button>
                     </div>
                 </div>
             </div>

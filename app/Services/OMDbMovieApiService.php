@@ -27,49 +27,32 @@ class OMDbMovieApiService extends MovieApiService
     /**
      * Search for movies using the OMDb API.
      *
-     * @return Collection<MovieApiSearchResponseStructure>
+     * @return MovieApiSearchResponseStructure
      */
-    public function search(string $query): Collection
+    public function search(string $query, int $page = 1): MovieApiSearchResponseStructure
     {
         $trimmedQuery = trim($query);
         if ($trimmedQuery === '') {
-            return collect();
-        }
-        /** @var Collection<MovieApiSearchResponseStructure> $results */
-        $results = collect();
-
-        $page = 1;
-        $pageSize = 10;
-        $totalPages = 1;
-        $noResults = false;
-        while ($page <= $totalPages && !$noResults) {
-            $response = $this->http->timeout(10)->get($this->baseUrl, [
-                'apikey' => $this->apiKey,
-                's' => $trimmedQuery,
-                'page' => $page,
+            return MovieApiSearchResponseStructure::fromArray([
+                'Response' => 'True',
+                'totalResults' => '0',
+                'Search' => []
             ]);
-
-            if (!$response->ok()) {
-                return $results;
-            }
-
-            $data = $response->json();
-
-            $totalPages = (int) ceil(($data['totalResults'] ?? 0) / $pageSize);
-
-            if ($data['Response'] === 'False') {
-                $noResults = true;
-            }
-
-            collect($data['Search'] ?? [])->each(function (array $item) use ($results) {
-                $item = MovieApiSearchResponseStructure::fromArray($item);
-                $results->push($item);
-            });
-
-            $page++;
         }
 
-        return $results;
+        $response = $this->http->timeout(10)->get($this->baseUrl, [
+            'apikey' => $this->apiKey,
+            's' => $trimmedQuery,
+            'page' => $page,
+        ]);
+
+        if (!$response->ok()) {
+            return MovieApiSearchResponseStructure::fromArray(['error' => 'Failed to fetch movies']);
+        }
+
+        $data = $response->json();
+
+        return MovieApiSearchResponseStructure::fromArray($data);
     }
 
     public function getMovieByImdbId(string $imdbId): ?MovieApiSingleMovieResponseStructure

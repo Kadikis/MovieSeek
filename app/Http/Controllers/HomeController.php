@@ -33,6 +33,10 @@ class HomeController extends Controller
         if ($searchId || $query) {
             if ($searchId) {
                 $searchResult = $this->searchRepository->getByIdAndGuestUuid($searchId, $guestUuid);
+
+                if ($searchResult && $request->has('load_more')) {
+                    $searchResult = $this->movieService->loadMorePages($searchResult, app(OMDbMovieApiService::class));
+                }
             }
             if (!$searchResult) {
                 $searchResult = $this->movieService->search($query, app(OMDbMovieApiService::class), $guestUuid);

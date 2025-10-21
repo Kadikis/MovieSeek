@@ -7,20 +7,16 @@ namespace App\Services;
 use App\Models\Movie;
 use App\Models\Search;
 use App\Repositories\SearchRepository;
-use App\Structures\MovieApiSearchResponseStructure;
+use App\Structures\MovieApiSearchMovieResponseStructure;
 
 class MovieService
 {
-
     public function __construct(
         private readonly SearchRepository $searchRepository,
     ) {}
 
     public function search(string $query, MovieApiService $movieApiService, string $guestUuid): ?Search
     {
-        //Normally we would run this in background job, but for now we will just set the time limit
-        set_time_limit(60);
-
         $query = strtolower(trim($query));
         if ($query === '') {
             return null;
@@ -32,15 +28,18 @@ class MovieService
         //If the search does not exist, create a new one and then fetch the movies from the API
         if (!$search || $search->isEmpty() || $search->isExpired()) {
             //If the search does not exist, create a new one
+            $searchData = $movieApiService->search($query, 1);
+
             $search = Search::create([
                 'query' => $query,
                 'guest_uuid' => $guestUuid,
+                'total_results' => $searchData->total_results,
+                'total_pages' => $searchData->total_pages,
+                'no_results' => $searchData->no_results,
+                'pages_loaded' => 1,
             ]);
 
-            /** @var Collection<MovieApiSearchResponseStructure> */
-            $movies = $movieApiService->search($query);
-
-            $movies->each(function (MovieApiSearchResponseStructure $movie) use ($search): void {
+            $searchData->movies->each(function (MovieApiSearchMovieResponseStructure $movie) use ($search): void {
                 $existingMovie = Movie::where('imdb_id', $movie->imdb_id)->first();
                 if ($existingMovie) {
                     $search->movies()->attach($existingMovie->id);
@@ -50,6 +49,36 @@ class MovieService
                 $search->movies()->create($movie->toArray());
             });
         }
+
+        return $search->load('movies');
+    }
+
+    public function loadMorePages(Search $search, MovieApiService $movieApiService, int $pagesToLoad = 2): Search
+    {
+        if ($search->pages_loaded >= $search->total_pages) {
+            return $search;
+        }
+
+        $currentPage = $search->pages_loaded + 1;
+        $endPage = min($currentPage + $pagesToLoad - 1, $search->total_pages);
+
+        for ($page = $currentPage; $page <= $endPage; $page++) {
+            $searchData = $movieApiService->search($search->query, $page);
+
+            $searchData->movies->each(function (MovieApiSearchMovieResponseStructure $movie) use ($search): void {
+                $existingMovie = Movie::where('imdb_id', $movie->imdb_id)->first();
+                if ($existingMovie) {
+                    $search->movies()->attach($existingMovie->id);
+                    return;
+                }
+
+                $search->movies()->create($movie->toArray());
+            });
+        }
+
+        $search->update([
+            'pages_loaded' => $endPage,
+        ]);
 
         return $search->load('movies');
     }

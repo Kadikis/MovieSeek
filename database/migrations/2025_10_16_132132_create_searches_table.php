@@ -15,6 +15,10 @@ return new class extends Migration
             $table->id();
             $table->uuid('guest_uuid');
             $table->string('query');
+            $table->integer('total_results')->default(0);
+            $table->integer('total_pages')->default(0);
+            $table->boolean('no_results')->default(false);
+            $table->integer('pages_loaded')->default(0);
             $table->timestamps();
 
             $table->foreign('guest_uuid')->references('uuid')->on('guests')->onDelete('cascade');

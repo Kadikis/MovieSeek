@@ -11,6 +11,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property int $id
  * @property string $guest_uuid
  * @property string $query
+ * @property int $total_results
+ * @property int $total_pages
+ * @property bool $no_results
+ * @property int $pages_loaded
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
@@ -19,6 +23,10 @@ class Search extends Model
     protected $fillable = [
         'query',
         'guest_uuid',
+        'total_results',
+        'total_pages',
+        'no_results',
+        'pages_loaded',
     ];
 
     public function movies(): BelongsToMany
