@@ -22,6 +22,7 @@ class IdentifyGuest
         if (!$guestId) {
             $guestId = Str::uuid()->toString();
             cookie()->queue(cookie('guest_id', $guestId, 60 * 24 * 30)); // 30 days
+            $request->cookies->add(['guest_id' => $guestId]); // Add the cookie to the current request
         }
 
         Guest::updateOrCreate(
