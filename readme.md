@@ -7,7 +7,7 @@ Project acts as FE\Cache. If we already have data stored return it and display t
 
 Project could be improved by fetching data in the background, since OMDb API only returns 10 item pages, but that introduces problem of showing response to user in real time. Maybe could push web socket event on success on BE.
 
-Searches attached to the sessions so they expire after two hours of inactivity. Should add task for cleaning up expired searches from DB.
+Searches attached to the unique guest users identified by cookie stored in DB and on client side. Should add task for cleaning up expired searches from DB.
 
 ## Steps for running this project
 

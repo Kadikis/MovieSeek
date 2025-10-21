@@ -27,19 +27,20 @@ class HomeController extends Controller
 
         $searchId = (int) $request->input('search_id');
         $query = (string) $request->input('query');
+        $guestUuid = (string) $request->cookie('guest_id');
 
         $searchResult = null;
         if ($searchId || $query) {
             if ($searchId) {
-                $searchResult = $this->searchRepository->getByIdAndSessionId($searchId, session()->getId());
+                $searchResult = $this->searchRepository->getByIdAndGuestUuid($searchId, $guestUuid);
             }
             if (!$searchResult) {
-                $searchResult = $this->movieService->search($query, app(OMDbMovieApiService::class), session()->getId());
+                $searchResult = $this->movieService->search($query, app(OMDbMovieApiService::class), $guestUuid);
             }
         }
 
         // List of latest searches to be displayed in index page
-        $latestSearches = $this->searchRepository->getLatestBySessionId(sessionId: session()->getId())->map(fn($search) => [
+        $latestSearches = $this->searchRepository->getLatestByGuestUuid(guestUuid: $guestUuid)->map(fn($search) => [
             'id' => $search->id,
             'query' => $search->query,
             'movies_count' => $search->movies_count,

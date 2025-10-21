@@ -44,32 +44,31 @@ class MovieServiceTest extends TestCase
         parent::tearDown();
     }
 
-    private function createSessionRecord(?string $sessionId = null): void
+    private function createGuestRecord(?string $guestUuid = null): void
     {
-        if (!$sessionId) {
-            throw new Exception("Session not found!");
+        if (!$guestUuid) {
+            throw new Exception("Guest not found!");
         }
 
-        DB::insert('insert into sessions (id, user_id, ip_address, user_agent, payload, last_activity) values (?, ?, ?, ?, ?, ?)', [
-            $sessionId,
-            null,
+        DB::insert('insert into guests (uuid, ip_address, user_agent, last_seen, expires_at) values (?, ?, ?, ?, ?)', [
+            $guestUuid,
             '127.0.0.1',
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-            '{"foo":"bar"}',
-            time(),
+            now(),
+            now()->addDays(30),
         ]);
     }
 
     public function test_search_returns_null_for_empty_query(): void
     {
-        $result = $this->movieService->search('', $this->mockMovieApiService, 'session-123');
+        $result = $this->movieService->search('', $this->mockMovieApiService, 'guest-uuid-123');
 
         $this->assertNull($result);
     }
 
     public function test_search_returns_null_for_whitespace_only_query(): void
     {
-        $result = $this->movieService->search('   ', $this->mockMovieApiService, 'session-123');
+        $result = $this->movieService->search('   ', $this->mockMovieApiService, 'guest-uuid-123');
 
         $this->assertNull($result);
     }
@@ -77,13 +76,13 @@ class MovieServiceTest extends TestCase
     public function test_search_returns_existing_valid_search(): void
     {
         $query = 'batman';
-        $sessionId = 'session-123';
+        $guestUuid = 'guest-uuid-123';
 
-        $this->createSessionRecord($sessionId);
+        $this->createGuestRecord($guestUuid);
 
         $search = Search::create([
             'query' => $query,
-            'session_id' => $sessionId,
+            'guest_uuid' => $guestUuid,
         ]);
 
         $movie = Movie::create([
@@ -96,26 +95,25 @@ class MovieServiceTest extends TestCase
 
         $search->movies()->attach($movie->id);
 
-        $this->mockSearchRepository->shouldReceive('getByQueryAndSessionId')->with($query, $sessionId)->andReturn($search);
+        $this->mockSearchRepository->shouldReceive('getByQueryAndGuestUuid')->with($query, $guestUuid)->andReturn($search);
 
-        $result = $this->movieService->search($query, $this->mockMovieApiService, $sessionId);
+        $result = $this->movieService->search($query, $this->mockMovieApiService, $guestUuid);
 
         $this->assertInstanceOf(Search::class, $result);
         $this->assertEquals($search->id, $result->id);
         $this->assertTrue($result->relationLoaded('movies'));
     }
 
-
     public function test_search_creates_new_search_when_none_exists(): void
     {
         $query = 'superman';
-        $sessionId = 'session-456';
+        $guestUuid = 'guest-uuid-456';
 
-        $this->createSessionRecord($sessionId);
+        $this->createGuestRecord($guestUuid);
 
         $this->mockSearchRepository
-            ->shouldReceive('getByQueryAndSessionId')
-            ->with($query, $sessionId)
+            ->shouldReceive('getByQueryAndGuestUuid')
+            ->with($query, $guestUuid)
             ->andReturn(null);
 
         $mockMovies = collect([
@@ -140,11 +138,11 @@ class MovieServiceTest extends TestCase
             ->with($query)
             ->andReturn($mockMovies);
 
-        $result = $this->movieService->search($query, $this->mockMovieApiService, $sessionId);
+        $result = $this->movieService->search($query, $this->mockMovieApiService, $guestUuid);
 
         $this->assertInstanceOf(Search::class, $result);
         $this->assertEquals($query, $result->query);
-        $this->assertEquals($sessionId, $result->session_id);
+        $this->assertEquals($guestUuid, $result->guest_uuid);
         $this->assertTrue($result->relationLoaded('movies'));
         $this->assertCount(2, $result->movies);
 
@@ -161,19 +159,19 @@ class MovieServiceTest extends TestCase
     public function test_search_creates_new_search_when_existing_is_expired(): void
     {
         $query = 'spiderman';
-        $sessionId = 'session-789';
+        $guestUuid = 'guest-uuid-789';
 
-        $this->createSessionRecord($sessionId);
+        $this->createGuestRecord($guestUuid);
 
         $expiredSearch = Search::create([
             'query' => $query,
-            'session_id' => $sessionId,
+            'guest_uuid' => $guestUuid,
             'created_at' => now()->subDays(4), // Expired (older than 3 days)
         ]);
 
         $this->mockSearchRepository
-            ->shouldReceive('getByQueryAndSessionId')
-            ->with($query, $sessionId)
+            ->shouldReceive('getByQueryAndGuestUuid')
+            ->with($query, $guestUuid)
             ->andReturn($expiredSearch);
 
         $mockMovies = collect([
@@ -191,29 +189,29 @@ class MovieServiceTest extends TestCase
             ->with($query)
             ->andReturn($mockMovies);
 
-        $result = $this->movieService->search($query, $this->mockMovieApiService, $sessionId);
+        $result = $this->movieService->search($query, $this->mockMovieApiService, $guestUuid);
 
         $this->assertInstanceOf(Search::class, $result);
         $this->assertNotEquals($expiredSearch->id, $result->id);
         $this->assertEquals($query, $result->query);
-        $this->assertEquals($sessionId, $result->session_id);
+        $this->assertEquals($guestUuid, $result->guest_uuid);
     }
 
     public function test_search_creates_new_search_when_existing_is_empty(): void
     {
         $query = 'wonder woman';
-        $sessionId = 'session-101';
+        $guestUuid = 'guest-uuid-101';
 
-        $this->createSessionRecord($sessionId);
+        $this->createGuestRecord($guestUuid);
 
         $emptySearch = Search::create([
             'query' => $query,
-            'session_id' => $sessionId,
+            'guest_uuid' => $guestUuid,
         ]);
 
         $this->mockSearchRepository
-            ->shouldReceive('getByQueryAndSessionId')
-            ->with($query, $sessionId)
+            ->shouldReceive('getByQueryAndGuestUuid')
+            ->with($query, $guestUuid)
             ->andReturn($emptySearch);
 
         $mockMovies = collect([
@@ -231,7 +229,7 @@ class MovieServiceTest extends TestCase
             ->with($query)
             ->andReturn($mockMovies);
 
-        $result = $this->movieService->search($query, $this->mockMovieApiService, $sessionId);
+        $result = $this->movieService->search($query, $this->mockMovieApiService, $guestUuid);
 
         $this->assertInstanceOf(Search::class, $result);
         $this->assertNotEquals($emptySearch->id, $result->id);
@@ -241,9 +239,9 @@ class MovieServiceTest extends TestCase
     public function test_search_attaches_existing_movie_to_search(): void
     {
         $query = 'batman';
-        $sessionId = 'session-202';
+        $guestUuid = 'guest-uuid-202';
 
-        $this->createSessionRecord($sessionId);
+        $this->createGuestRecord($guestUuid);
 
         $existingMovie = Movie::create([
             'title' => 'The Dark Knight',
@@ -254,8 +252,8 @@ class MovieServiceTest extends TestCase
         ]);
 
         $this->mockSearchRepository
-            ->shouldReceive('getByQueryAndSessionId')
-            ->with($query, $sessionId)
+            ->shouldReceive('getByQueryAndGuestUuid')
+            ->with($query, $guestUuid)
             ->andReturn(null);
 
         $mockMovies = collect([
@@ -273,7 +271,7 @@ class MovieServiceTest extends TestCase
             ->with($query)
             ->andReturn($mockMovies);
 
-        $result = $this->movieService->search($query, $this->mockMovieApiService, $sessionId);
+        $result = $this->movieService->search($query, $this->mockMovieApiService, $guestUuid);
 
         $this->assertInstanceOf(Search::class, $result);
         $this->assertCount(1, $result->movies);
@@ -449,13 +447,13 @@ class MovieServiceTest extends TestCase
     public function test_search_trims_whitespace_from_query(): void
     {
         $query = '  batman  ';
-        $sessionId = 'session-404';
+        $guestUuid = 'guest-uuid-404';
 
-        $this->createSessionRecord($sessionId);
+        $this->createGuestRecord($guestUuid);
 
         $this->mockSearchRepository
-            ->shouldReceive('getByQueryAndSessionId')
-            ->with('batman', $sessionId)
+            ->shouldReceive('getByQueryAndGuestUuid')
+            ->with('batman', $guestUuid)
             ->andReturn(null);
 
         $mockMovies = collect([
@@ -473,7 +471,7 @@ class MovieServiceTest extends TestCase
             ->with('batman') // Should be trimmed
             ->andReturn($mockMovies);
 
-        $result = $this->movieService->search($query, $this->mockMovieApiService, $sessionId);
+        $result = $this->movieService->search($query, $this->mockMovieApiService, $guestUuid);
 
         $this->assertInstanceOf(Search::class, $result);
         $this->assertEquals('batman', $result->query); // Should be stored as trimmed

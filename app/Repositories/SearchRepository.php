@@ -9,13 +9,13 @@ use Illuminate\Support\Collection;
 
 class SearchRepository
 {
-    public function getByIdAndSessionId(int $id, string $sessionId): ?Search
+    public function getByIdAndGuestUuid(int $id, string $guestUuid): ?Search
     {
-        $search = Search::where('session_id', $sessionId)
+        $search = Search::where('guest_uuid', $guestUuid)
             ->with('movies')
             ->find($id);
 
-        if (!$search || $search->session_id !== $sessionId ||  $search->isEmpty() || $search->isExpired()) {
+        if (!$search || $search->guest_uuid !== $guestUuid ||  $search->isEmpty() || $search->isExpired()) {
             return null;
         }
 
@@ -25,16 +25,19 @@ class SearchRepository
     /**
      * @return Collection<Search>
      */
-    public function getLatestBySessionId(string $sessionId, int $limit = 5): Collection
+    public function getLatestByGuestUuid(string $guestUuid, int $limit = 5): Collection
     {
-        return Search::where('session_id', $sessionId)
-            ->withCount('movies')->latest()->take($limit)->get();
+        return Search::where('guest_uuid', $guestUuid)
+            ->withCount('movies')
+            ->latest()
+            ->take($limit)
+            ->get();
     }
 
-    public function getByQueryAndSessionId(string $query, string $sessionId): ?Search
+    public function getByQueryAndGuestUuid(string $query, string $guestUuid): ?Search
     {
         return Search::where('query', $query)
-            ->where('session_id', $sessionId)
+            ->where('guest_uuid', $guestUuid)
             ->first();
     }
 }

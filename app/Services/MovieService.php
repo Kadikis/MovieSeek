@@ -16,7 +16,7 @@ class MovieService
         private readonly SearchRepository $searchRepository,
     ) {}
 
-    public function search(string $query, MovieApiService $movieApiService, string $sessionId): ?Search
+    public function search(string $query, MovieApiService $movieApiService, string $guestUuid): ?Search
     {
         //Normally we would run this in background job, but for now we will just set the time limit
         set_time_limit(60);
@@ -27,14 +27,14 @@ class MovieService
         }
 
         //First check if the search already exists and is not expired or empty
-        $search = $this->searchRepository->getByQueryAndSessionId($query, $sessionId);
+        $search = $this->searchRepository->getByQueryAndGuestUuid($query, $guestUuid);
 
         //If the search does not exist, create a new one and then fetch the movies from the API
         if (!$search || $search->isEmpty() || $search->isExpired()) {
             //If the search does not exist, create a new one
             $search = Search::create([
                 'query' => $query,
-                'session_id' => $sessionId,
+                'guest_uuid' => $guestUuid,
             ]);
 
             /** @var Collection<MovieApiSearchResponseStructure> */
