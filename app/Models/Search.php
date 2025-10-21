@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * @property int $id
- * @property int $session_id
+ * @property string $guest_uuid
  * @property string $query
  * @property Carbon $created_at
  * @property Carbon $updated_at
@@ -18,7 +18,7 @@ class Search extends Model
 {
     protected $fillable = [
         'query',
-        'session_id',
+        'guest_uuid',
     ];
 
     public function movies(): BelongsToMany
